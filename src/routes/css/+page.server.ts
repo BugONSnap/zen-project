@@ -22,7 +22,9 @@ export const load: PageServerLoad = async () => {
         id: q.id,
         title: q.title,
         description: q.description,
-        difficulty: q.difficulty
+        explanation: q.explanation,
+        difficulty: q.difficulty,
+        options: q.options
     }));
 
     return { quizzes: quizzesList };

@@ -1,10 +1,11 @@
 import type { PageServerLoad } from './$types';
 import { db } from '$lib/server/db';
-import { users, userProgress, quizCategories } from '$lib/server/db/schema';
+import { users, userProgress } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { redirect, error as svelteError } from '@sveltejs/kit';
+import type { Locals } from '$lib/server/types';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals }: { locals: Locals }) => {
     const userId = locals.user?.id;
     if (!userId) {
         throw redirect(302, '/login');
@@ -29,17 +30,14 @@ export const load: PageServerLoad = async ({ locals }) => {
         }
     });
 
-    // Calculate total completed quizzes
-    const totalCompleted = progress.reduce((acc, curr) => acc + (curr.completedQuizzes || 0), 0);
-
     return {
         user: {
             id: user.id,
             username: user.username,
-            email: user.email
+            email: user.email,
+            totalPoints: user.totalPoints,
+            createdAt: user.createdAt,
         },
-        totalPoints: user.totalPoints || 0,
-        totalCompleted,
         categories: categories.map(category => {
             const categoryProgress = progress.find(p => p.quizCategoryId === category.id);
             return {

@@ -24,7 +24,7 @@
 
 <div class="min-h-screen bg-gray-100">
     <!-- Header -->
-    <DashboardHeader />
+    <DashboardHeader user={data.user} />
 
     <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <!-- Quick Actions -->

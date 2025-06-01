@@ -64,17 +64,31 @@ export const load: PageServerLoad = async ({ url }) => {
         ];
     }
 
+    // Fetch all quizzes in the same category and difficulty, ordered by id
+    let allQuizzes: any[] = [];
+    if (quiz && quiz.quizCategoryId != null && quiz.difficulty != null) {
+        allQuizzes = await db.query.quizzes.findMany({
+            where: and(
+                eq(quizzes.quizCategoryId, quiz.quizCategoryId),
+                eq(quizzes.difficulty, quiz.difficulty)
+            ),
+            orderBy: [quizzes.id]
+        });
+    }
+
     return {
         quiz: {
             id: quiz.id,
             title: quiz.title,
             description: quiz.description,
+            explanation: quiz.explanation,
             difficulty: quiz.difficulty,
             questions,
             answer: quiz.answer,
             challengeType: challengeTypeName
         },
         category: quiz.quizCategoryId,
-        difficulty: quiz.difficulty
+        difficulty: quiz.difficulty,
+        allQuizzes
     };
 }; 
