@@ -36,3 +36,27 @@ npm run build
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+
+##env local
+# Database Configuration
+DATABASE_URL="file:zen.db"
+
+# JWT Configuration
+JWT_SECRET=K9mP2$vL5nX8@jR4tY7wQ1cF3hB6dN9gM4kL7pS2xV5
+# Environment
+NODE_ENV="development"
+
+# Security
+SESSION_SECRET="J8#hN3$kM6@wP9tR2xV5cF7hB4dN1gM8kL5pS2xV5
+
+##
+# Database Configuration
+DATABASE_URL="file:zen.db"
+
+# JWT Configuration
+JWT_SECRET=K9mP2$vL5nX8@jR4tY7wQ1cF3hB6dN9gM4kL7pS2xV5
+# Environment
+NODE_ENV="development"
+
+# Security
+SESSION_SECRET="J8#hN3$kM6@wP9tR2xV5cF7hB4dN1gM8kL5pS2xV5
