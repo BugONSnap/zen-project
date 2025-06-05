@@ -24,7 +24,8 @@ export const load: PageServerLoad = async () => {
         description: q.description,
         explanation: q.explanation,
         difficulty: q.difficulty,
-        options: q.options
+        options: q.options,
+        answer: q.answer
     }));
 
     return { quizzes: quizzesList };

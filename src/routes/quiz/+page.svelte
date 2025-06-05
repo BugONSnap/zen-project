@@ -22,9 +22,6 @@
     // Debug log
     console.log('quizData:', quizData);
 
-    // Helper: is this a single-question quiz (array of strings)?
-    $: isSingleQuestion = Array.isArray(quizData.questions) && quizData.questions.length > 0 && typeof quizData.questions[0] === 'string';
-
     async function saveQuizResult(finalScore: number, isCorrect: boolean) {
         try {
             await fetch('/api/quiz/submit', {
@@ -46,15 +43,21 @@
     }
 
     function nextQuestion() {
-        if (isSingleQuestion) {
-            score = selectedAnswer === parseInt(quizData.answer) ? 1 : 0;
+        const currentQ = quizData.questions[currentQuestionIndex];
+        if (quizData.challengeType === 'Identification') {
+            // Compare userInput (trimmed, case-insensitive) to correctAnswer
+            if (
+                typeof currentQ.correctAnswer !== 'undefined' &&
+                userInput.trim().toLowerCase() === String(currentQ.correctAnswer).trim().toLowerCase()
+            ) {
+                score++;
+            }
             quizCompleted = true;
             saveQuizResult(score, score > 0);
         } else if (
             quizData.challengeType === 'Complete the Code' || quizData.challengeType === 'Code Challenge'
         ) {
-            // Check code answer
-            const correct = quizData.questions[currentQuestionIndex].correctAnswer?.trim();
+            const correct = currentQ.correctAnswer?.trim();
             if (userCode.trim() === correct) {
                 score++;
                 codeFeedback = 'Correct!';
@@ -64,12 +67,27 @@
             quizCompleted = true;
             saveQuizResult(score, score > 0);
         } else {
-            if (
-                quizData.questions &&
-                quizData.questions[currentQuestionIndex] &&
-                typeof quizData.questions[currentQuestionIndex].correctAnswer !== 'undefined' &&
-                selectedAnswer === quizData.questions[currentQuestionIndex].correctAnswer
-            ) {
+            let isCorrect = false;
+            if (typeof currentQ.correctAnswer !== 'undefined' && selectedAnswer !== null) {
+                const options = quizData.questions[currentQuestionIndex].options;
+                const correctNum = Number(currentQ.correctAnswer);
+
+                // Numeric answer: support both 0-based and 1-based
+                if (!isNaN(correctNum)) {
+                    if (
+                        selectedAnswer === correctNum || // zero-based
+                        selectedAnswer === correctNum - 1 // one-based
+                    ) {
+                        isCorrect = true;
+                    }
+                } else if (
+                    typeof currentQ.correctAnswer === 'string' &&
+                    options
+                ) {
+                    isCorrect = options[selectedAnswer] === currentQ.correctAnswer;
+                }
+            }
+            if (isCorrect) {
                 score++;
             }
             if (currentQuestionIndex < quizData.questions.length - 1) {
@@ -181,54 +199,7 @@
     {#if !showIntroModal}
         <div class="max-w-3xl mx-auto px-4 py-8">
             <div class="bg-white rounded-lg shadow-lg p-6">
-                {#if isSingleQuestion}
-                    {#if !quizCompleted}
-                        <div class="mb-6">
-                            <h1 class="text-2xl font-bold text-gray-900 mb-2">{quizData.title}</h1>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 100%"></div>
-                            </div>
-                            <p class="text-sm text-gray-600 mt-2">Question 1 of 1</p>
-                        </div>
-                        <div class="mb-6">
-                            <h2 class="text-xl font-semibold text-gray-800 mb-4">
-                                {quizData.description}
-                            </h2>
-                            <div class="space-y-3">
-                                {#each quizData.questions as option, index}
-                                    <button
-                                        class="w-full text-left p-4 rounded-lg border transition-colors {selectedAnswer === index ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}"
-                                        on:click={() => handleAnswer(index)}
-                                    >
-                                        {option}
-                                    </button>
-                                {/each}
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button
-                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                on:click={nextQuestion}
-                                disabled={selectedAnswer === null}
-                            >
-                                Finish Quiz
-                            </button>
-                        </div>
-                    {:else}
-                        <div class="text-center py-8">
-                            <h2 class="text-2xl font-bold text-gray-900 mb-4">Quiz Completed!</h2>
-                            <p class="text-xl text-gray-700 mb-6">
-                                Your score: {selectedAnswer === parseInt(quizData.answer) ? 1 : 0} out of 1
-                            </p>
-                            <button
-                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                on:click={restartQuiz}
-                            >
-                                Restart Quiz
-                            </button>
-                        </div>
-                    {/if}
-                {:else if quizData.questions && quizData.questions.length > 0}
+                {#if quizData.questions && quizData.questions.length > 0}
                     {#if !quizCompleted}
                         <div class="mb-6">
                             <h1 class="text-2xl font-bold text-gray-900 mb-2">{quizData.title}</h1>
