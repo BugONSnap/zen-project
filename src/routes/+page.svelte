@@ -9,6 +9,8 @@
     let error = '';
     let loading = false;
     let formElement: HTMLFormElement;
+    let successMessage = '';
+    let uniqueInfo = '';
 
     // Validation states
     let emailError = '';
@@ -38,6 +40,8 @@
         passwordError = '';
         usernameError = '';
         passwordStrength = 0;
+        successMessage = '';
+        uniqueInfo = '';
         if (formElement) {
             formElement.reset();
         }
@@ -107,6 +111,15 @@
         return true;
     }
 
+    function validateUniqueInfo(value: string): boolean {
+        if (!value) {
+            error = 'Unique recovery information is required';
+            return false;
+        }
+        error = '';
+        return true;
+    }
+
     // Input handlers with validation
     function handleEmailInput(event: Event) {
         const value = (event.target as HTMLInputElement).value;
@@ -126,22 +139,30 @@
         validateUsername(value);
     }
 
+    function handleUniqueInfoInput(event: Event) {
+        const value = (event.target as HTMLInputElement).value;
+        uniqueInfo = value;
+        validateUniqueInfo(value);
+    }
+
     async function handleSubmit() {
         // Validate all fields
         const isEmailValid = validateEmail(email);
         const isPasswordValid = validatePassword(password);
         const isUsernameValid = activeTab === 'register' ? validateUsername(username) : true;
+        const isUniqueInfoValid = activeTab === 'register' ? validateUniqueInfo(uniqueInfo) : true;
 
-        if (!isEmailValid || !isPasswordValid || !isUsernameValid) {
+        if (!isEmailValid || !isPasswordValid || !isUsernameValid || !isUniqueInfoValid) {
             return;
         }
 
         loading = true;
         error = '';
+        successMessage = '';
 
         try {
             const endpoint = activeTab === 'login' ? '/api/auth/login' : '/api/auth/register';
-            const body = activeTab === 'login' ? { email, password } : { email, password, username };
+            const body = activeTab === 'login' ? { email, password } : { email, password, username, uniqueInfo };
 
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -160,10 +181,15 @@
                 // Set admin cookie
                 document.cookie = 'isAdmin=true; path=/; max-age=86400'; // 24 hours
                 goto('/admin');
-            } else {
+            } else if (activeTab === 'login') {
                 // For non-admin users, ensure admin cookie is not set (or remove it if it exists)
                 document.cookie = 'isAdmin=false; path=/; max-age=0'; // Expire the cookie immediately
                 goto('/dashboard');
+            } else {
+                // Registration successful: switch to login tab and show message
+                switchTab('login');
+                successMessage = 'Registration successful! Please log in.';
+                return;
             }
         } catch (e: any) {
             error = e.message;
@@ -178,14 +204,15 @@
     }
 </script>
 
-<div class="min-h-screen bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-5 bg-white/95 p-8 rounded-lg shadow-2xl border border-gray-200 relative z-10 overflow-hidden">
+        <h1 class="text-center text-[10vh] font-extrabold font-serif text-gray-900 mb-1">Zentry</h1>
         <!-- Tabs -->
         <div class="flex border-b border-gray-200">
             <button
                 class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm {activeTab === 'login' 
                     ? 'border-indigo-500 text-indigo-600' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+                    : 'border-transparent text-gray-500 hover:text-indigo-700 hover:border-indigo-700'}"
                 on:click={() => switchTab('login')}
             >
                 Login
@@ -193,7 +220,7 @@
             <button
                 class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm {activeTab === 'register' 
                     ? 'border-indigo-500 text-indigo-600' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}"
+                    : 'border-transparent text-gray-500 hover:text-indigo-700 hover:border-indigo-700'}"
                 on:click={() => switchTab('register')}
             >
                 Register
@@ -212,12 +239,18 @@
             </div>
         {/if}
 
+        {#if successMessage}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <span class="block sm:inline">{successMessage}</span>
+            </div>
+        {/if}
+
         <form 
             class="mt-8 space-y-6" 
             on:submit|preventDefault={handleSubmit}
             bind:this={formElement}
         >
-            <div class="rounded-md shadow-sm -space-y-px">
+            <div class="rounded-md shadow-sm space-y-4">
                 {#if activeTab === 'register'}
                     <div>
                         <label for="username" class="sr-only">Username</label>
@@ -228,12 +261,25 @@
                             required
                             value={username}
                             on:input={handleUsernameInput}
-                            class="appearance-none rounded-none relative block w-full px-3 py-2 border {usernameError ? 'border-red-300' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border {usernameError ? 'border-red-300' : 'border-indigo-200'} placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600 focus:z-10 sm:text-sm"
                             placeholder="Username"
                         />
                         {#if usernameError}
                             <p class="mt-1 text-sm text-red-600">{usernameError}</p>
                         {/if}
+                    </div>
+                    <div>
+                        <label for="uniqueInfo" class="sr-only">Unique Recovery Information</label>
+                        <input
+                            id="uniqueInfo"
+                            name="uniqueInfo"
+                            type="text"
+                            required
+                            value={uniqueInfo}
+                            on:input={handleUniqueInfoInput}
+                            class="appearance-none rounded-none relative block w-full px-3 py-2 border {error ? 'border-red-300' : 'border-indigo-200'} placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-600 focus:border-indigo-600 focus:z-10 sm:text-sm"
+                            placeholder="Unique Recovery Information (e.g., Mother's maiden name)"
+                        />
                     </div>
                 {/if}
                 <div>
@@ -245,7 +291,7 @@
                         required
                         value={email}
                         on:input={handleEmailInput}
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border {emailError ? 'border-red-300' : 'border-gray-300'} placeholder-gray-500 text-gray-900 {activeTab === 'login' ? 'rounded-t-md' : ''} focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border {emailError ? 'border-red-300' : 'border-indigo-200'} placeholder-gray-500 text-gray-900 {activeTab === 'login' ? 'rounded-t-md' : ''} focus:outline-none focus:ring-indigo-600 focus:border-indigo-600 focus:z-10 sm:text-sm"
                         placeholder="Email address"
                     />
                     {#if emailError}
@@ -261,7 +307,7 @@
                         required
                         value={password}
                         on:input={handlePasswordInput}
-                        class="appearance-none rounded-none relative block w-full px-3 py-2 border {passwordError ? 'border-red-300' : 'border-gray-300'} placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                        class="appearance-none rounded-none relative block w-full px-3 py-2 border {passwordError ? 'border-red-300' : 'border-indigo-200'} placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-600 focus:border-indigo-600 focus:z-10 sm:text-sm"
                         placeholder="Password"
                     />
                     {#if passwordError}
@@ -286,7 +332,7 @@
                 <button
                     type="submit"
                     disabled={loading}
-                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                 >
                     {#if loading}
                         <span class="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -302,16 +348,12 @@
 
             {#if activeTab === 'login'}
                 <div class="text-center">
-                    <button
-                        type="button"
-                        class="text-sm text-indigo-600 hover:text-indigo-500"
-                        on:click={() => {
-                            // TODO: Implement forgot password functionality
-                            alert('Forgot password functionality coming soon!');
-                        }}
+                    <a
+                        href="/reset-password"
+                        class="text-sm text-indigo-600 hover:text-indigo-700"
                     >
                         Forgot your password?
-                    </button>
+                    </a>
                 </div>
             {/if}
         </form>

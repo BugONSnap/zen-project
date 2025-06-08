@@ -52,13 +52,13 @@ export const load: PageServerLoad = async ({ url }) => {
         }
     }
 
-    // If Complete the Code or Code Challenge and questions is empty, create a default question
-    if ((challengeTypeName === 'Complete the Code' || challengeTypeName === 'Code Challenge') && (!questions || questions.length === 0)) {
+    // If Complete the Code, Code Challenge or Identification and questions is empty, create a default question
+    if ((challengeTypeName === 'Complete the Code' || challengeTypeName === 'Code Challenge' || challengeTypeName === 'Identification') && (!questions || questions.length === 0)) {
         questions = [
             {
                 id: 1,
                 question: quiz.description,
-                starterCode: quiz.answer,
+                starterCode: challengeTypeName === 'Code Challenge' ? quiz.answer : undefined, // Only include starterCode for Code Challenge
                 correctAnswer: quiz.answer
             }
         ];

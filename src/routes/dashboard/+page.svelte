@@ -22,7 +22,7 @@
     let categories: Category[] = data.categories;
 </script>
 
-<div class="min-h-screen bg-gray-100">
+<div class="min-h-screen bg-cover bg-center overflow-y-auto" style="background-image: url('/BG.jpg');">
     <!-- Header -->
     <DashboardHeader user={data.user} />
 
@@ -46,6 +46,10 @@
                         <button class="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md bg-gray-200 hover:bg-gray-300" on:click={() => goto('/javascript')}>
                             <img src="/JS.webp" alt="JS Logo" class="h-8 w-8 object-contain mr-2">
                             JavaScript
+                        </button>
+                        <button class="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md bg-gray-200 hover:bg-gray-300" on:click={() => goto('/advancejs')}>
+                            <img src="/JS.webp" alt="Advanced JS Logo" class="h-8 w-8 object-contain mr-2">
+                            Advanced JavaScript
                         </button>
                     </div>
                 </div>

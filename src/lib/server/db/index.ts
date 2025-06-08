@@ -6,4 +6,10 @@ const client = createClient({
 	url: 'file:zen.db',
 });
 
-export const db = drizzle(client, { schema });
+// Merge schema and tables
+const mergedSchema = {
+	...schema,
+	
+};
+
+export const db = drizzle(client, { schema: mergedSchema });

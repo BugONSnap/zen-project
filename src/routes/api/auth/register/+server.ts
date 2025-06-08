@@ -5,10 +5,10 @@ import bcrypt from 'bcryptjs';
 
 export async function POST({ request }) {
     try {
-        const { username, email, password } = await request.json();
+        const { username, email, password, uniqueInfo } = await request.json();
 
         // Validate input
-        if (!username || !email || !password) {
+        if (!username || !email || !password || !uniqueInfo) {
             return json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -32,6 +32,7 @@ export async function POST({ request }) {
             username,
             email,
             passwordHash,
+            uniqueInfo,
             totalPoints: 0,
             rankId: 1  // Set to Beginner rank
         }).returning();

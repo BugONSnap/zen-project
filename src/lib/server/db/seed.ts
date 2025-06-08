@@ -1,440 +1,98 @@
 import { db } from './index';
-import { quizzes, quizCategories, challengeTypes, quizResults } from './schema';
-import { eq, inArray } from 'drizzle-orm';
+import { users, userRankings } from './schema';
+import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
-
-
-async function seedHtmlQuizzes() {
-    // 1. Ensure HTML category exists
-    let htmlCategory = await db.query.quizCategories.findFirst({
-        where: eq(quizCategories.name, 'HTML')
-    });
-    if (!htmlCategory) {
-        const inserted = await db.insert(quizCategories).values({ name: 'HTML' }).returning();
-        htmlCategory = inserted[0];
+// Function to handle schema changes
+async function updateSchema() {
+    try {
+        // Check if uniqueInfo column exists by trying to select it
+        try {
+            await db.run(`
+                SELECT unique_info FROM users LIMIT 1
+            `);
+            console.log('✅ uniqueInfo column already exists in users table');
+        } catch (error) {
+            // If the column doesn't exist, add it
+            console.log('Adding uniqueInfo column to users table...');
+            await db.run(`
+                ALTER TABLE users 
+                ADD COLUMN unique_info TEXT NOT NULL DEFAULT 'Not set'
+            `);
+            console.log('✅ Added uniqueInfo column to users table!');
+        }
+    } catch (error) {
+        console.error('Error updating schema:', error);
+        throw error;
     }
+}
 
-    // 2. Ensure challenge types exist for HTML
-    let mcType = await db.query.challengeTypes.findFirst({
-        where: eq(challengeTypes.name, 'Multiple Choice')
+// Function to seed example users with unique recovery information
+async function seedUsers() {
+    // First, ensure we have a default rank
+    let defaultRank = await db.query.userRankings.findFirst({
+        where: eq(userRankings.rankName, 'Beginner')
     });
-    if (!mcType) {
-        const inserted = await db.insert(challengeTypes).values({
-            name: 'Multiple Choice',
-            description: 'Choose the correct answer from the options.',
-            quizCategoryId: htmlCategory.id
+    
+    if (!defaultRank) {
+        const inserted = await db.insert(userRankings).values({
+            rankName: 'Beginner',
+            minPoints: 0,
+            maxPoints: 100
         }).returning();
-        mcType = inserted[0];
+        defaultRank = inserted[0];
     }
 
-    let codeChallengeType = await db.query.challengeTypes.findFirst({
-        where: eq(challengeTypes.name, 'Code Challenge')
-    });
-    if (!codeChallengeType) {
-        const inserted = await db.insert(challengeTypes).values({
-            name: 'Code Challenge',
-            description: 'Write code to solve a problem',
-            quizCategoryId: htmlCategory.id
-        }).returning();
-        codeChallengeType = inserted[0];
-    }
-
-    let identificationType = await db.query.challengeTypes.findFirst({
-        where: eq(challengeTypes.name, 'Identification')
-    });
-    if (!identificationType) {
-        const inserted = await db.insert(challengeTypes).values({
-            name: 'Identification',
-            description: 'Identify the correct HTML element or attribute',
-            quizCategoryId: htmlCategory.id
-        }).returning();
-        identificationType = inserted[0];
-    }
-
-    let timeTrialType = await db.query.challengeTypes.findFirst({
-        where: eq(challengeTypes.name, 'Time Trial')
-    });
-    if (!timeTrialType) {
-        const inserted = await db.insert(challengeTypes).values({
-            name: 'Time Trial',
-            description: 'Complete the task within a time limit',
-            quizCategoryId: htmlCategory.id
-        }).returning();
-        timeTrialType = inserted[0];
-    }
-
-    // 3. Prepare easy HTML quizzes (Multiple Choice)
-    const easyHtmlQuizzes = [
+    // Example users with unique recovery information
+    const exampleUsers = [
         {
-            title: 'What does HTML stand for?',
-            description: 'Basic HTML question.',
-            explanation: 'HTML stands for HyperText Markup Language.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '0',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'What does HTML stand for?',
-                    options: [
-                        'HyperText Markup Language',
-                        'Home Tool Markup Language',
-                        'Hyperlinks and Text Markup Language',
-                        'Hyperlinking Text Mark Language'
-                    ],
-                    correctAnswer: 0
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
+            username: 'john_doe',
+            email: 'john@example.com',
+            passwordHash: await bcrypt.hash('password123', 10),
+            uniqueInfo: 'Favorite childhood pet: Max the dog',
+            totalPoints: 0,
+            rankId: defaultRank.id
         },
         {
-            title: 'Which HTML element is used for the largest heading?',
-            description: 'Heading elements.',
-            explanation: '<h1> is the largest heading element.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '0',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'Which HTML element is used for the largest heading?',
-                    options: ['<h1>', '<heading>', '<h6>', '<head>'],
-                    correctAnswer: 0
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
+            username: 'jane_smith',
+            email: 'jane@example.com',
+            passwordHash: await bcrypt.hash('securepass456', 10),
+            uniqueInfo: 'First car: 2010 Toyota Camry',
+            totalPoints: 0,
+            rankId: defaultRank.id
         },
         {
-            title: 'Which tag is used to create a hyperlink in HTML?',
-            description: 'Hyperlink tag.',
-            explanation: '<a> tag is used for hyperlinks.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '0',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'Which tag is used to create a hyperlink in HTML?',
-                    options: ['<a>', '<link>', '<href>', '<hyperlink>'],
-                    correctAnswer: 0
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
-        },
-        {
-            title: 'Which attribute is used to provide alternative text for an image?',
-            description: 'Image accessibility.',
-            explanation: 'The alt attribute provides alternative text for images.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '1',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'Which attribute is used to provide alternative text for an image?',
-                    options: ['title', 'alt', 'src', 'longdesc'],
-                    correctAnswer: 1
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
-        },
-        {
-            title: 'What is the correct HTML element for inserting a line break?',
-            description: 'Line break tag.',
-            explanation: '<br> element inserts a line break.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '0',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'What is the correct HTML element for inserting a line break?',
-                    options: ['<br>', '<lb>', '<break>', '<newline>'],
-                    correctAnswer: 0
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
-        },
-        {
-            title: 'Which HTML element defines a paragraph?',
-            description: 'Paragraph element.',
-            explanation: '<p> element defines a paragraph.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '2',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'Which HTML element defines a paragraph?',
-                    options: ['<para>', '<text>', '<p>', '<br>'],
-                    correctAnswer: 2
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
-        },
-        {
-            title: 'What is the correct HTML for adding a background color?',
-            description: 'Background color.',
-            explanation: 'Background color is typically set using CSS, but inline styles or the bgcolor attribute (deprecated) could be used.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '3',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'What is the correct HTML for adding a background color?',
-                    options: ['<body color="yellow">', '<background>yellow</background>', '<bgcolor>yellow</bgcolor>', '<body style="background-color:yellow;">'],
-                    correctAnswer: 3
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
-        },
-        {
-            title: 'Which HTML element specifies a footer for a document or section?',
-            description: 'Footer element.',
-            explanation: '<footer> element specifies a footer.',
-            difficulty: 'EASY' as const,
-            points: 10,
-            answer: '0',
-            timeLimit: 60,
-            options: JSON.stringify([
-                {
-                    question: 'Which HTML element specifies a footer for a document or section?',
-                    options: ['<footer>', '<bottom>', '<end>', '<foot>'],
-                    correctAnswer: 0
-                }
-            ]),
-            quizCategoryId: htmlCategory.id,
-            challengeTypeId: mcType.id
+            username: 'alex_dev',
+            email: 'alex@example.com',
+            passwordHash: await bcrypt.hash('devpass789', 10),
+            uniqueInfo: 'Birth city: San Francisco',
+            totalPoints: 0,
+            rankId: defaultRank.id
         }
     ];
 
-    // 4. Insert quizzes
-    for (const quiz of easyHtmlQuizzes) {
-        await db.insert(quizzes).values(quiz);
-    }
-    console.log('✅ Seeded HTML quizzes!');
-}
-
-// ... (rest of the code remains unchanged)
-        // 2. Ensure challenge types exist for HTML
-        let mcType = await db.query.challengeTypes.findFirst({
-            where: eq(challengeTypes.name, 'Multiple Choice')
+    // Insert users if they don't exist
+    for (const user of exampleUsers) {
+        const existingUser = await db.query.users.findFirst({
+            where: eq(users.email, user.email)
         });
-        if (!mcType) {
-            const inserted = await db.insert(challengeTypes).values({
-                name: 'Multiple Choice',
-                description: 'Choose the correct answer from the options.',
-                quizCategoryId: htmlCategory.id
-            }).returning();
-            mcType = inserted[0];
-        }
 
-        let codeChallengeType = await db.query.challengeTypes.findFirst({
-            where: eq(challengeTypes.name, 'Code Challenge')
-        });
-        if (!codeChallengeType) {
-            const inserted = await db.insert(challengeTypes).values({
-                name: 'Code Challenge',
-                description: 'Write code to solve a problem',
-                quizCategoryId: htmlCategory.id
-            }).returning();
-            codeChallengeType = inserted[0];
-        }
-
-        let identificationType = await db.query.challengeTypes.findFirst({
-            where: eq(challengeTypes.name, 'Identification')
-        });
-        if (!identificationType) {
-            const inserted = await db.insert(challengeTypes).values({
-                name: 'Identification',
-                description: 'Identify the correct HTML element or attribute',
-                quizCategoryId: htmlCategory.id
-            }).returning();
-            identificationType = inserted[0];
-        }
-
-        let timeTrialType = await db.query.challengeTypes.findFirst({
-            where: eq(challengeTypes.name, 'Time Trial')
-        });
-        if (!timeTrialType) {
-            const inserted = await db.insert(challengeTypes).values({
-                name: 'Time Trial',
-                description: 'Complete the task within a time limit',
-                quizCategoryId: htmlCategory.id
-            }).returning();
-            timeTrialType = inserted[0];
-        }
-
-        // 3. Prepare easy HTML quizzes (Multiple Choice)
-        const easyHtmlQuizzes = [
-            {
-                title: 'What does HTML stand for?',
-                description: 'Basic HTML question.',
-                explanation: 'HTML stands for HyperText Markup Language.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '0',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'What does HTML stand for?',
-                        options: [
-                            'HyperText Markup Language',
-                            'Home Tool Markup Language',
-                            'Hyperlinks and Text Markup Language',
-                            'Hyperlinking Text Mark Language'
-                        ],
-                        correctAnswer: 0
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
-            },
-            {
-                title: 'Which HTML element is used for the largest heading?',
-                description: 'Heading elements.',
-                explanation: '<h1> is the largest heading element.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '0',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'Which HTML element is used for the largest heading?',
-                        options: ['<h1>', '<heading>', '<h6>', '<head>'],
-                        correctAnswer: 0
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
-            },
-            {
-                title: 'Which tag is used to create a hyperlink in HTML?',
-                description: 'Hyperlink tag.',
-                explanation: '<a> tag is used for hyperlinks.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '0',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'Which tag is used to create a hyperlink in HTML?',
-                        options: ['<a>', '<link>', '<href>', '<hyperlink>'],
-                        correctAnswer: 0
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
-            },
-            {
-                title: 'Which attribute is used to provide alternative text for an image?',
-                description: 'Image accessibility.',
-                explanation: 'The alt attribute provides alternative text for images.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '1',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'Which attribute is used to provide alternative text for an image?',
-                        options: ['title', 'alt', 'src', 'longdesc'],
-                        correctAnswer: 1
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
-            },
-            {
-                title: 'What is the correct HTML element for inserting a line break?',
-                description: 'Line break tag.',
-                explanation: '<br> element inserts a line break.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '0',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'What is the correct HTML element for inserting a line break?',
-                        options: ['<br>', '<lb>', '<break>', '<newline>'],
-                        correctAnswer: 0
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
-            },
-            {
-                title: 'Which HTML element defines a paragraph?',
-                description: 'Paragraph element.',
-                explanation: '<p> element defines a paragraph.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '2',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'Which HTML element defines a paragraph?',
-                        options: ['<para>', '<text>', '<p>', '<br>'],
-                        correctAnswer: 2
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
-            },
-            {
-                title: 'What is the correct HTML for adding a background color?',
-                description: 'Background color.',
-                explanation: 'Background color is typically set using CSS, but inline styles or the bgcolor attribute (deprecated) could be used.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '3',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'What is the correct HTML for adding a background color?',
-                        options: ['<body color="yellow">', '<background>yellow</background>', '<bgcolor>yellow</bgcolor>', '<body style="background-color:yellow;">'],
-                        correctAnswer: 3
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
-            },
-            {
-                title: 'Which HTML element specifies a footer for a document or section?',
-                description: 'Footer element.',
-                explanation: '<footer> element specifies a footer.',
-                difficulty: 'EASY' as const,
-                points: 10,
-                answer: '0',
-                timeLimit: 60,
-                options: JSON.stringify([
-                    {
-                        question: 'Which HTML element specifies a footer for a document or section?',
-                        options: ['<footer>', '<bottom>', '<end>', '<foot>'],
-                        correctAnswer: 0
-                    }
-                ]),
-                quizCategoryId: htmlCategory.id,
-                challengeTypeId: mcType.id
+        if (!existingUser) {
+            await db.insert(users).values(user);
+        } else {
+            // Update existing user's uniqueInfo if it's the default value
+            if (existingUser.uniqueInfo === 'Not set') {
+                await db.update(users)
+                    .set({ uniqueInfo: user.uniqueInfo })
+                    .where(eq(users.id, existingUser.id));
             }
-        ];
-
-        // 4. Insert quizzes
-        for (const quiz of easyHtmlQuizzes) {
-            await db.insert(quizzes).values(quiz);
         }
-        console.log('✅ Seeded HTML quizzes!');
+    }
+    console.log('✅ Seeded example users with unique recovery information!');
 }
 
-// Run cleaning and seeding
+// Run schema update and seeding
 (async () => {
-    await seedHtmlQuizzes();
-    })();
-})(); 
+    await updateSchema();  // First update the schema
+    await seedUsers();     // Then seed the data
+})();

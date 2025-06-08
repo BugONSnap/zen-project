@@ -7,6 +7,7 @@ export const users = sqliteTable('users', {
 	username: text('username').notNull().unique(),
 	email: text('email').notNull().unique(),
 	passwordHash: text('password_hash').notNull(),
+	uniqueInfo: text('unique_info').notNull(),
 	createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 	totalPoints: integer('total_points').default(0),
 	rankId: integer('rank_id').references(() => userRankings.id)

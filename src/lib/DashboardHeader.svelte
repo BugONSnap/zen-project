@@ -12,9 +12,8 @@
 
     async function handleLogout() {
         try {
-            // Clear the admin cookie
-            document.cookie = 'isAdmin=false; path=/; max-age=0';
-
+            // Call the logout API endpoint to clear all cookies server-side
+            await fetch('/api/logout', { method: 'POST' });
             // Redirect to main page
             goto('/');
         } catch (error) {
@@ -47,7 +46,7 @@
     });
 </script>
 
-<header class="bg-white shadow">
+<header class="bg-white shadow sticky top-0 z-50">
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-900">{title}</h1>
         <!-- Desktop nav -->
@@ -60,6 +59,9 @@
                     Dashboard
                 </button>
             {/if}
+            <a href="/leaderboard" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" title="Leaderboard">
+                Leaderboard
+            </a>
             <!-- Profile avatar -->
          
             <button
@@ -95,9 +97,16 @@
                             Back to Dashboard
                         </button>
                     {/if}
-                    <a href="/profile" title="Profile" class="block px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-100" on:click={() => { menuOpen = false; }}>
-                        Profile
-                    </a>
+                    {#if $page.url.pathname !== '/leaderboard'}
+                        <a href="/leaderboard" title="Leaderboard" class="block px-4 py-2 text-sm text-green-700 hover:bg-green-100" on:click={() => { menuOpen = false; }}>
+                            Leaderboard
+                        </a>
+                    {/if}
+                    {#if $page.url.pathname !== '/profile'}
+                        <a href="/profile" title="Profile" class="block px-4 py-2 text-sm text-indigo-700 hover:bg-indigo-100" on:click={() => { menuOpen = false; }}>
+                            Profile
+                        </a>
+                    {/if}
                     <button
                         class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-100"
                         on:click={() => { handleLogout(); menuOpen = false; }}
