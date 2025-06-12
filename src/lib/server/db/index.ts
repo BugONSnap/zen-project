@@ -2,8 +2,11 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
 import * as schema from './schema';
 
+// Use environment variable for database URL, fallback to local file
+const databaseUrl = process.env.DATABASE_URL || 'file:zen.db';
+
 const client = createClient({
-	url: 'file:zen.db',
+	url: databaseUrl,
 });
 
 // Merge schema and tables

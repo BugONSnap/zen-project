@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: zen-project
+    env: node
+    buildCommand: bun install && bun run build
+    startCommand: bun run db:init && bun run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: file:/opt/render/project/src/zen.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+    disk:
+      name: sqlite-data
+      mountPath: /opt/render/project/src
+      sizeGB: 1 
