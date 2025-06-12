@@ -62,9 +62,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });`);
 
     // Stores for rendering in the iframe (updated on 'Run' click)
-    const renderedHtmlCode = writable($htmlCode);
-    const renderedCssCode = writable($cssCode);
-    const renderedJsCode = writable($jsCode);
+    const renderedHtmlCode = writable('');
+    const renderedCssCode = writable('');
+    const renderedJsCode = writable('');
+
+    onMount(() => {
+        runCode(); // Run code initially after component mounts
+    });
 
     // Active tab
     let activeTab = 'html';
@@ -134,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <div class="h-screen flex flex-col bg-gray-900 text-white" class:fixed={isFullscreen} class:inset-0={isFullscreen} class:z-50={isFullscreen}>
     <!-- Header -->
-    <DashboardHeader user={data.user} />
+    <DashboardHeader user={data.user || undefined} isPlaygroundPage={true} />
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
@@ -208,6 +212,16 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="w-full lg:w-1/2 flex flex-col bg-white flex-grow">
             <div class="flex-1 overflow-hidden">
                 {#if Preview}
+                    <div class="flex justify-between items-center bg-gray-900 p-4 shadow-xl">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-green-500 text-base font-bold flex items-center">
+                                <span class="w-3 h-3 bg-green-500 rounded-full mr-2 animate-pulse"></span>Preview Console Output
+                            </span>
+                        </div>
+                        <button class="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-full shadow-lg hover:from-green-600 hover:to-green-700 transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-75" on:click={runCode}>
+                            Run Code
+                        </button>
+                    </div>
                     <Preview htmlCode={$renderedHtmlCode} cssCode={$renderedCssCode} jsCode={$renderedJsCode} />
                 {:else}
                     <div class="flex items-center justify-center h-full bg-gray-50">

@@ -1,13 +1,10 @@
 import { defineConfig } from 'drizzle-kit';
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
-
 export default defineConfig({
 	schema: './src/lib/server/db/schema.ts',
-	dialect: 'turso',
+	dialect: 'sqlite',
 	dbCredentials: {
-		authToken: process.env.DATABASE_AUTH_TOKEN,
-		url: process.env.DATABASE_URL
+		url: './zen.db'
 	},
 	verbose: true,
 	strict: true

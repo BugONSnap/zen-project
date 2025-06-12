@@ -152,8 +152,8 @@
     <!-- Preview Header -->
     <div class="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
         <h3 class="text-sm font-medium text-gray-700 flex items-center">
-            <span class="mr-2">👁️</span>
-            Live Preview
+           
+          
         </h3>
         <div class="flex items-center space-x-2">
             <span class="text-xs text-gray-500">Console Output</span>

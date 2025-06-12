@@ -1,28 +1,16 @@
-# sv
+# Zen Project
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
-
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
+A SvelteKit-based learning platform for web development.
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Once you've created a project and installed dependencies with `bun install`, start a development server:
 
 ```bash
-npm run dev
+bun run dev
 
 # or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun run dev -- --open
 ```
 
 ## Building
@@ -30,33 +18,25 @@ npm run dev -- --open
 To create a production version of your app:
 
 ```bash
-npm run build
+bun run build
 ```
 
-You can preview the production build with `npm run preview`.
+You can preview the production build with `bun run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Database
 
-##env local
-# Database Configuration
-DATABASE_URL="file:zen.db"
+This project uses SQLite for local development. The database file is `zen.db` in the project root.
 
+## Environment Variables
+
+Create a `.env.local` file in the project root with the following variables:
+
+```
 # JWT Configuration
-JWT_SECRET=K9mP2$vL5nX8@jR4tY7wQ1cF3hB6dN9gM4kL7pS2xV5
+JWT_SECRET=your-secret-key-here
+
 # Environment
 NODE_ENV="development"
 
 # Security
-SESSION_SECRET="J8#hN3$kM6@wP9tR2xV5cF7hB4dN1gM8kL5pS2xV5
-
-##
-# Database Configuration
-DATABASE_URL="file:zen.db"
-
-# JWT Configuration
-JWT_SECRET=K9mP2$vL5nX8@jR4tY7wQ1cF3hB6dN9gM4kL7pS2xV5
-# Environment
-NODE_ENV="development"
-
-# Security
-SESSION_SECRET="J8#hN3$kM6@wP9tR2xV5cF7hB4dN1gM8kL5pS2xV5
+SESSION_SECRET="your-session-secret-here"
