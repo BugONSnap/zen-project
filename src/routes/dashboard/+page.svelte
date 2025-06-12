@@ -51,6 +51,10 @@
                             <img src="/JS.webp" alt="Advanced JS Logo" class="h-8 w-8 object-contain mr-2">
                             Advanced JavaScript
                         </button>
+                        <button class="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md bg-green-200 hover:bg-green-300" on:click={() => goto('/playground')}>
+                            <span class="text-2xl mr-2">🚀</span>
+                            Code Playground
+                        </button>
                     </div>
                 </div>
             </div>

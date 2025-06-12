@@ -3,10 +3,21 @@ import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
+import CryptoJS from 'crypto-js';
 
 export async function POST({ request, cookies }) {
     try {
-        const { email, password } = await request.json();
+        const { email: encryptedEmail, password: encryptedPassword } = await request.json();
+
+        // Define the same secret key as on the client
+        const secretKey = 'your-secret-key'; // WARNING: Insecure for production!
+
+        // Decrypt the email and password
+        const decryptedEmailBytes = CryptoJS.AES.decrypt(encryptedEmail, secretKey);
+        const email = decryptedEmailBytes.toString(CryptoJS.enc.Utf8);
+
+        const decryptedPasswordBytes = CryptoJS.AES.decrypt(encryptedPassword, secretKey);
+        const password = decryptedPasswordBytes.toString(CryptoJS.enc.Utf8);
 
         // Validate input
         if (!email || !password) {

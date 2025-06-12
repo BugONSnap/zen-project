@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
     import { goto } from '$app/navigation';
+    import CryptoJS from 'crypto-js';
 
     let activeTab: 'login' | 'register' = 'login';
     let email = '';
@@ -162,7 +163,26 @@
 
         try {
             const endpoint = activeTab === 'login' ? '/api/auth/login' : '/api/auth/register';
-            const body = activeTab === 'login' ? { email, password } : { email, password, username, uniqueInfo };
+            let body = activeTab === 'login' ? { email, password } : { email, password, username, uniqueInfo };
+
+            // Encrypt payload if it's a login request
+            if (activeTab === 'login') {
+                const secretKey = 'your-secret-key'; // WARNING: Insecure for production!
+                const encryptedEmail = CryptoJS.AES.encrypt(email, secretKey).toString();
+                const encryptedPassword = CryptoJS.AES.encrypt(password, secretKey).toString();
+                body = { email: encryptedEmail, password: encryptedPassword };
+
+                // For demonstration: decrypt to preview
+                const decryptedEmailBytes = CryptoJS.AES.decrypt(encryptedEmail, secretKey);
+                const decryptedEmail = decryptedEmailBytes.toString(CryptoJS.enc.Utf8);
+                const decryptedPasswordBytes = CryptoJS.AES.decrypt(encryptedPassword, secretKey);
+                const decryptedPassword = decryptedPasswordBytes.toString(CryptoJS.enc.Utf8);
+
+                console.log('Encrypted Email:', encryptedEmail);
+                console.log('Encrypted Password:', encryptedPassword);
+                console.log('Decrypted Email (for preview):', decryptedEmail);
+                console.log('Decrypted Password (for preview):', decryptedPassword);
+            }
 
             const response = await fetch(endpoint, {
                 method: 'POST',

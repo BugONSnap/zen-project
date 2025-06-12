@@ -168,27 +168,21 @@
 
     function goToNextQuiz() {
         if (nextQuizId) {
-            window.location.href = `/quiz?category=${encodeURIComponent(data.category)}&difficulty=${encodeURIComponent(quizData.difficulty)}&id=${nextQuizId}`;
+            window.location.href = `/quiz?category=${encodeURIComponent(data.category ?? '')}&difficulty=${encodeURIComponent(quizData.difficulty ?? '')}&id=${nextQuizId}`;
         }
     }
 </script>
 
 <div class="min-h-screen bg-gray-100">
-    <DashboardHeader title={quizData.title} />
+    <DashboardHeader title={quizData.title} user={undefined} />
     {#if showIntroModal}
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+        <div class="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
             <div class="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full relative">
                 <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none" on:click={exitQuiz} aria-label="Close">&times;</button>
                 <h2 class="text-2xl font-bold mb-4">{quizData.title}</h2>
-                {#if quizData.explanation}
-                    <div class="mb-2">
-                        <span class="block text-sm text-indigo-700 font-semibold">Explanation:</span>
-                        <p class="text-sm text-gray-700">{quizData.explanation}</p>
-                    </div>
-                {/if}
                 <div class="mb-4">
-                    <span class="block text-sm text-gray-700 font-semibold">Description:</span>
-                    <p class="text-sm text-gray-500">{quizData.description}</p>
+                    <span class="block text-lg text-gray-900 font-semibold">Description:</span>
+                    <p class="text-lg text-gray-800 font-medium">{quizData.description}</p>
                 </div>
                 <button class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full" on:click={closeIntroModal}>
                     Start Quiz
@@ -293,6 +287,12 @@
                             <p class="text-xl text-gray-700 mb-6">
                                 Your score: {score} out of {quizData.questions.length}
                             </p>
+                            {#if quizData.explanation}
+                                <div class="mb-6 text-gray-600">
+                                    <span class="block text-lg font-semibold">Explanation:</span>
+                                    <p class="text-md">{quizData.explanation}</p>
+                                </div>
+                            {/if}
                             <button
                                 class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                 on:click={restartQuiz}

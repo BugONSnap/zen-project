@@ -72,6 +72,18 @@ export const quizResults = sqliteTable('quiz_results', {
 	pointsEarned: integer('points_earned')
 });
 
+// Code Snippets table for playground
+export const codeSnippets = sqliteTable('code_snippets', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	userId: integer('user_id').references(() => users.id),
+	title: text('title').notNull(),
+	htmlCode: text('html_code').default(''),
+	cssCode: text('css_code').default(''),
+	jsCode: text('js_code').default(''),
+	createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+	updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date())
+});
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
 	rank: one(userRankings, {
@@ -79,7 +91,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 		references: [userRankings.id],
 	}),
 	progress: many(userProgress),
-	quizResults: many(quizResults)
+	quizResults: many(quizResults),
+	codeSnippets: many(codeSnippets)
 }));
 
 export const quizCategoriesRelations = relations(quizCategories, ({ many }) => ({
@@ -132,5 +145,12 @@ export const quizResultsRelations = relations(quizResults, ({ one }) => ({
 	quiz: one(quizzes, {
 		fields: [quizResults.quizId],
 		references: [quizzes.id],
+	})
+}));
+
+export const codeSnippetsRelations = relations(codeSnippets, ({ one }) => ({
+	user: one(users, {
+		fields: [codeSnippets.userId],
+		references: [users.id],
 	})
 }));

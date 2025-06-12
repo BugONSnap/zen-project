@@ -1,0 +1,397 @@
+<script lang="ts">
+    import { onMount } from 'svelte';
+    import { writable } from 'svelte/store';
+    import CodeEditor from '$lib/components/CodeEditor.svelte';
+    import DashboardHeader from '$lib/DashboardHeader.svelte';
+    // import Preview from '$lib/components/Preview.svelte'; // Removed direct import
+    // import Console from '$lib/components/Console.svelte'; // Removed direct import
+    import { enhance } from '$app/forms';
+    import { browser } from '$app/environment'; // Import browser environment flag
+
+    export let data; // Declare data prop to receive server-side data
+
+    // Dynamically import Preview component
+    let Preview: any;
+    onMount(async () => {
+        if (browser) {
+            const module = await import('$lib/components/Preview.svelte');
+            Preview = module.default;
+        }
+    });
+
+    // Code stores (for editors) - Fixed HTML structure
+    const htmlCode = writable(`<h1>Welcome to the Playground!</h1>
+<p>Start coding and see the results in real-time.</p>
+<div id="output"></div>`);
+
+    const cssCode = writable(`body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+p {
+    color: #666;
+    line-height: 1.6;
+}
+
+#output {
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}`);
+
+    const jsCode = writable(`// Your JavaScript code here
+console.log('Hello from the playground!');
+
+// Example: Add some interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    const output = document.getElementById('output');
+    if (output) {
+        output.innerHTML = '<h3>JavaScript is working!</h3><p>Try modifying this code and see the changes.</p>';
+    }
+});`);
+
+    // Stores for rendering in the iframe (updated on 'Run' click)
+    const renderedHtmlCode = writable($htmlCode);
+    const renderedCssCode = writable($cssCode);
+    const renderedJsCode = writable($jsCode);
+
+    // Active tab
+    let activeTab = 'html';
+    let isFullscreen = false;
+
+    function runCode() {
+        renderedHtmlCode.set($htmlCode);
+        renderedCssCode.set($cssCode);
+        renderedJsCode.set($jsCode);
+    }
+
+    function toggleFullscreen() {
+        isFullscreen = !isFullscreen;
+    }
+
+    function resetCode() {
+        htmlCode.set(`<h1>Welcome to the Playground!</h1>
+<p>Start coding and see the results in real-time.</p>
+<div id="output"></div>`);
+        
+        cssCode.set(`body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+p {
+    color: #666;
+    line-height: 1.6;
+}
+
+#output {
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}`);
+
+        jsCode.set(`// Your JavaScript code here
+console.log('Hello from the playground!');
+
+// Example: Add some interactive elements
+document.addEventListener('DOMContentLoaded', function() {
+    const output = document.getElementById('output');
+    if (output) {
+        output.innerHTML = '<h3>JavaScript is working!</h3><p>Try modifying this code and see the changes.</p>';
+    }
+});`);
+
+        // Reset rendered code as well
+        runCode();
+    }
+</script>
+
+<svelte:head>
+    <title>Code Playground - Zen Project</title>
+    <meta name="description" content="Interactive code playground for HTML, CSS, and JavaScript" />
+</svelte:head>
+
+<div class="h-screen flex flex-col bg-gray-900 text-white" class:fixed={isFullscreen} class:inset-0={isFullscreen} class:z-50={isFullscreen}>
+    <!-- Header -->
+    <DashboardHeader user={data.user} />
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
+        <!-- Code Editors Section -->
+        <div class="w-full lg:w-1/2 flex flex-col border-r border-gray-700 flex-grow">
+            <!-- Editor Tabs -->
+            <div class="bg-gray-800 border-b border-gray-700 flex">
+                <button 
+                    class="flex-1 px-4 py-3 text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                    class:bg-green-600={activeTab === 'html'}
+                    class:text-white={activeTab === 'html'}
+                    class:bg-gray-700={activeTab !== 'html'}
+                    class:text-gray-300={activeTab !== 'html'}
+                    class:hover:bg-gray-600={activeTab !== 'html'}
+                    on:click={() => activeTab = 'html'}
+                >
+                    <span>📄</span>
+                    <span>HTML</span>
+                </button>
+                <button 
+                    class="flex-1 px-4 py-3 text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                    class:bg-green-600={activeTab === 'css'}
+                    class:text-white={activeTab === 'css'}
+                    class:bg-gray-700={activeTab !== 'css'}
+                    class:text-gray-300={activeTab !== 'css'}
+                    class:hover:bg-gray-600={activeTab !== 'css'}
+                    on:click={() => activeTab = 'css'}
+                >
+                    <span>🎨</span>
+                    <span>CSS</span>
+                </button>
+                <button 
+                    class="flex-1 px-4 py-3 text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-2"
+                    class:bg-green-600={activeTab === 'js'}
+                    class:text-white={activeTab === 'js'}
+                    class:bg-gray-700={activeTab !== 'js'}
+                    class:text-gray-300={activeTab !== 'js'}
+                    class:hover:bg-gray-600={activeTab !== 'js'}
+                    on:click={() => activeTab = 'js'}
+                >
+                    <span>⚡</span>
+                    <span>JavaScript</span>
+                </button>
+            </div>
+
+            <!-- Editor Content -->
+            <div class="flex-1 overflow-hidden">
+                {#if activeTab === 'html'}
+                    <CodeEditor 
+                        language="html" 
+                        bind:value={$htmlCode}
+                        placeholder="Write your HTML here..."
+                    />
+                {:else if activeTab === 'css'}
+                    <CodeEditor 
+                        language="css" 
+                        bind:value={$cssCode}
+                        placeholder="Write your CSS here..."
+                    />
+                {:else if activeTab === 'js'}
+                    <CodeEditor 
+                        language="javascript" 
+                        bind:value={$jsCode}
+                        placeholder="Write your JavaScript here..."
+                    />
+                {/if}
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="w-full lg:w-1/2 flex flex-col bg-white flex-grow">
+            <div class="flex-1 overflow-hidden">
+                {#if Preview}
+                    <Preview htmlCode={$renderedHtmlCode} cssCode={$renderedCssCode} jsCode={$renderedJsCode} />
+                {:else}
+                    <div class="flex items-center justify-center h-full bg-gray-50">
+                        <div class="text-center">
+                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+                            <p class="text-gray-600">Loading playground...</p>
+                        </div>
+                    </div>
+                {/if}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .playground-container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #1a1a1a;
+        color: #fff;
+    }
+
+    .playground-container.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9999;
+    }
+
+    .playground-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: #2d2d2d;
+        border-bottom: 1px solid #444;
+        flex-shrink: 0;
+    }
+
+    .header-left h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #4CAF50;
+    }
+
+    .header-left p {
+        margin: 0.25rem 0 0 0;
+        color: #ccc;
+        font-size: 0.9rem;
+    }
+
+    .header-controls {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+        background: #4CAF50;
+        color: white;
+    }
+
+    .btn:hover {
+        background: #45a049;
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: #666;
+    }
+
+    .btn-secondary:hover {
+        background: #555;
+    }
+
+    .playground-main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .editors-section {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #444;
+    }
+
+    .editor-tabs {
+        display: flex;
+        background: #333;
+        border-bottom: 1px solid #444;
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 0.75rem;
+        background: none;
+        border: none;
+        color: #ccc;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+
+    .tab-btn:hover {
+        background: #444;
+    }
+
+    .tab-btn.active {
+        background: #4CAF50;
+        color: white;
+    }
+
+    .editor-content {
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .preview-section {
+        width: 50%;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        color: #333;
+    }
+
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .preview-header h3 {
+        margin: 0;
+        color: #333;
+    }
+
+    .preview-content {
+        flex: 1;
+        overflow: auto;
+        padding: 1rem;
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+
+    .preview-content::-webkit-scrollbar {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .playground-main {
+            flex-direction: column;
+        }
+
+        .editors-section,
+        .preview-section {
+            width: 100%;
+        }
+
+        .editors-section {
+            height: 40%;
+        }
+
+        .preview-section {
+            height: 60%;
+        }
+
+        .playground-header {
+            flex-direction: column;
+            gap: 1rem;
+            text-align: center;
+        }
+    }
+</style> 

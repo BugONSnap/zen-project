@@ -59,6 +59,11 @@
                     Dashboard
                 </button>
             {/if}
+            {#if $page.url.pathname !== '/playground'}
+                <a href="/playground" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center space-x-2" title="Code Playground">
+                     Playground
+                </a>
+            {/if}
             <a href="/leaderboard" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-green-700 bg-green-100 hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" title="Leaderboard">
                 Leaderboard
             </a>
@@ -96,6 +101,11 @@
                         >
                             Back to Dashboard
                         </button>
+                    {/if}
+                    {#if $page.url.pathname !== '/playground'}
+                        <a href="/playground" title="Code Playground" class="block px-4 py-2 text-sm text-green-700 hover:bg-green-100" on:click={() => { menuOpen = false; }}>
+                            🚀 Playground
+                        </a>
                     {/if}
                     {#if $page.url.pathname !== '/leaderboard'}
                         <a href="/leaderboard" title="Leaderboard" class="block px-4 py-2 text-sm text-green-700 hover:bg-green-100" on:click={() => { menuOpen = false; }}>
