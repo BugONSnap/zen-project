@@ -173,7 +173,7 @@
 
     <!-- Console Output -->
     {#if consoleOutput.length > 0}
-        <div class="border-t border-gray-200 bg-gray-900 text-green-400 p-3 max-h-32 overflow-y-auto">
+        <div class="border-t border-gray-200 bg-gray-900 text-green-400 p-3 max-h-32 overflow-y-auto md:max-h-40 md:overflow-y-auto sm:max-h-48 sm:overflow-y-auto lg:max-h-56 lg:overflow-y-auto xl:max-h-64 xl:overflow-y-auto" style="max-height:40vh;">
             <div class="text-xs font-mono space-y-1">
                 {#each consoleOutput as output}
                     <div class="whitespace-pre-wrap">{output}</div>

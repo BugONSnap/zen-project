@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <!-- Main Content -->
     <div class="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
         <!-- Code Editors Section -->
-        <div class="w-full lg:w-1/2 flex flex-col border-r border-gray-700 flex-grow">
+        <div class="w-full lg:w-1/2 flex flex-col border-r border-gray-700 flex-grow min-h-0">
             <!-- Editor Tabs -->
             <div class="bg-gray-800 border-b border-gray-700 flex">
                 <button 
@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <!-- Editor Content -->
-            <div class="flex-1 overflow-hidden">
+            <div class="flex-1 overflow-x-auto overflow-y-auto min-h-0 h-[50vh] lg:h-auto max-h-[50vh] lg:max-h-none">
                 {#if activeTab === 'html'}
                     <CodeEditor 
                         language="html" 
@@ -209,8 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
 
         <!-- Preview Section -->
-        <div class="w-full lg:w-1/2 flex flex-col bg-white flex-grow">
-            <div class="flex-1 overflow-hidden">
+        <div class="w-full lg:w-1/2 flex flex-col bg-white flex-grow min-h-0">
+            <div class="flex-1 overflow-x-auto overflow-y-auto min-h-0 h-[50vh] lg:h-auto max-h-[50vh] lg:max-h-none">
                 {#if Preview}
                     <div class="flex justify-between items-center bg-gray-900 p-4 shadow-xl">
                         <div class="flex items-center space-x-4">
@@ -305,103 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         background: #555;
     }
 
-    .playground-main {
-        display: flex;
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .editors-section {
-        width: 50%;
-        display: flex;
-        flex-direction: column;
-        border-right: 1px solid #444;
-    }
-
-    .editor-tabs {
-        display: flex;
-        background: #333;
-        border-bottom: 1px solid #444;
-    }
-
-    .tab-btn {
-        flex: 1;
-        padding: 0.75rem;
-        background: none;
-        border: none;
-        color: #ccc;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-size: 0.9rem;
-    }
-
-    .tab-btn:hover {
-        background: #444;
-    }
-
-    .tab-btn.active {
-        background: #4CAF50;
-        color: white;
-    }
-
-    .editor-content {
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .preview-section {
-        width: 50%;
-        display: flex;
-        flex-direction: column;
-        background: #fff;
-        color: #333;
-    }
-
-    .preview-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .preview-header h3 {
-        margin: 0;
-        color: #333;
-    }
-
-    .preview-content {
-        flex: 1;
-        overflow: auto;
-        padding: 1rem;
-        /* Hide scrollbar for Chrome, Safari and Opera */
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
-    }
-
-    .preview-content::-webkit-scrollbar {
-        display: none;
-    }
-
     @media (max-width: 768px) {
-        .playground-main {
-            flex-direction: column;
-        }
-
-        .editors-section,
-        .preview-section {
-            width: 100%;
-        }
-
-        .editors-section {
-            height: 40%;
-        }
-
-        .preview-section {
-            height: 60%;
-        }
-
         .playground-header {
             flex-direction: column;
             gap: 1rem;

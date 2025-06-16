@@ -224,7 +224,7 @@
     }
 </script>
 
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" style="background: url('/BG.jpg') center center / cover no-repeat;">
     <div class="max-w-md w-full space-y-5 bg-white/95 p-8 rounded-lg shadow-2xl border border-gray-200 relative z-10 overflow-hidden">
         <h1 class="text-center text-[10vh] font-extrabold font-serif text-gray-900 mb-1">Zentry</h1>
         <!-- Tabs -->

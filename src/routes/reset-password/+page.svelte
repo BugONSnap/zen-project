@@ -144,7 +144,7 @@
     }
 </script>
 
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div style="background-image: url('/BG.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat;" class=" min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-5 bg-white/95 p-8 rounded-lg shadow-2xl border border-gray-200">
         <h1 class="text-center text-3xl font-extrabold text-gray-900">
             Reset Password
